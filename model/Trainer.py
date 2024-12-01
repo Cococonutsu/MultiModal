@@ -28,8 +28,8 @@ class FusionModel(nn.Module):
     def forward_audio(self, audio_features, audio_masks, labels, mode="single_cls"):
         return self.audio_encoder(audio_features, audio_masks, labels, mode)
 
-    def forward_vision(self, mp4_file_paths, labels):
-        return self.vision_encoder(mp4_file_paths, labels)
+    def forward_vision(self, visions, vision_masks, labels):
+        return self.vision_encoder(visions, vision_masks, labels)
 
 
 class Trainer:
@@ -41,7 +41,7 @@ class Trainer:
         self.model = FusionModel(MOSI_config).to(self.device)
 
         # 优化器和学习率调度器
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=MOSI_config.train_param.lr, weight_decay=1e-3)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=MOSI_config.train_param.lr, weight_decay=1e-3, amsgrad=True)
         self.scheduler = transformers.optimization.get_linear_schedule_with_warmup(
             self.optimizer,
             num_warmup_steps=int(MOSI_config.train_param.num_warm_up * len(self.train_loader)),
@@ -67,14 +67,13 @@ class Trainer:
                 vision_masks = batch["vision_masks"].to(self.device)
 
                 labels = batch["labels"].to(self.device)
-                annotations = batch["annotations"].to(self.device)
 
                 if modal == "text":
                     reg_result, train_loss = self.model.forward_text(texts_tokens, text_masks, labels)
                 elif modal == "audio":
                     reg_result, train_loss = self.model.forward_audio(audio_features, audio_masks, labels)
                 elif modal == "vision":
-                    reg_result, train_loss = self.model.forward_vision(visions, labels)
+                    reg_result, train_loss = self.model.forward_vision(visions, vision_masks, labels)
                 elif modal == "fusion":
                     pass
 
@@ -110,14 +109,13 @@ class Trainer:
                 vision_masks = batch["vision_masks"].to(self.device)
 
                 labels = batch["labels"].to(self.device)
-                annotations = batch["annotations"].to(self.device)
 
                 if modal == "text":
                     reg_result, valid_loss = self.model.forward_text(texts_tokens, text_masks, labels)
                 elif modal == "audio":
                     reg_result, valid_loss = self.model.forward_audio(audio_features, audio_masks, labels)
                 elif modal == "vision":
-                    reg_result, valid_loss = self.model.forward_vision(visions, labels)
+                    reg_result, valid_loss = self.model.forward_vision(visions, vision_masks, labels)
                 elif modal == "fusion":
                     pass
 

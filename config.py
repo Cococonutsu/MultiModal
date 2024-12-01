@@ -3,8 +3,8 @@ import torch
 class MOSI_config:
 
     class train_param:
-        epochs = 20
-        batch_size = 16
+        epochs = 50
+        batch_size = 32
         DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
         lr = 1e-4
         num_warm_up = 5
@@ -23,15 +23,19 @@ class MOSI_config:
     class Text:
         ROBERTA = "roberta-large"
         BERT = "bert-base-uncased"
-        BERT = "roberta-base"
+        # BERT = "roberta-base"
 
     class Video:
         VIT = "google/vit-base-patch16-224-in21k"
         XCLIP = "microsoft/xclip-base-patch32"
         VIDEOMAE = "MCG-NJU/videomae-base"
+        epochs = 100
+        batch_size = 128
 
     class Audio:
         DATA2VEC = "facebook/data2vec-audio-base"
+        epochs = 50
+        batch_size = 32
 
 
     

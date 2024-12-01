@@ -6,7 +6,7 @@ import _pickle as pk
 import torch
 import torchaudio
 from torch.utils.data import Dataset, DataLoader
-from transformers import AutoTokenizer, AutoImageProcessor, ViTModel, Wav2Vec2FeatureExtractor
+from transformers import AutoTokenizer, Wav2Vec2FeatureExtractor
 
 from config import MOSI_config
 
@@ -73,7 +73,7 @@ class MOSI_Dataset(Dataset):
 
                 # # image
                 "visions": torch.tensor(vision, dtype=torch.float32),
-                "vision_masks": torch.tensor(vision_mask, dtype=torch.float32),
+                "vision_masks": vision_mask,
 
                 # audio
                 "audio_features": audio_feature,
@@ -177,26 +177,6 @@ class MOSI_Dataset(Dataset):
     def __len__(self):
         return len(self.mosi_data)
     
-# def collate_fn(batch):
-#     images_list = [item["images"] for item in batch]
-#     max_length = max(len(sublist) for sublist in images_list)
-#     for i in range(len(images_list)):
-#         if len(images_list[i]) < max_length:
-#             images_list[i].extend([None] * (max_length - len(images_list[i])))
-
-#     texts = [item["texts"] for item in batch]
-#     audio_features = [torch.tensor(item["audio_features"], dtype=torch.long) for item in batch]
-#     audio_masks = [torch.tensor(item["audio_masks"], dtype=torch.long) for item in batch]
-#     labels = [torch.tensor(item["labels"], dtype=torch.float32) for item in batch]
-
-#     return {
-#         "texts": texts,
-#         "images": images_list,
-#         "audio_features": torch.stack(audio_features),
-#         "audio_masks": torch.stack(audio_masks),
-#         "labels": torch.stack(labels)
-#     }
-
 
 
 def get_dataloader(dataset_name):
@@ -205,7 +185,7 @@ def get_dataloader(dataset_name):
         test_data = MOSI_Dataset("test", MOSI_config)
         valid_data = MOSI_Dataset("valid", MOSI_config)
 
-        train_loader = DataLoader(train_data, batch_size=MOSI_config.train_param.batch_size, shuffle=False)
+        train_loader = DataLoader(train_data, batch_size=MOSI_config.train_param.batch_size, shuffle=True)
         test_loader = DataLoader(test_data, batch_size=MOSI_config.train_param.batch_size, shuffle=False)
         valid_loader = DataLoader(valid_data, batch_size=MOSI_config.train_param.batch_size, shuffle=False)
 
