@@ -33,14 +33,7 @@ class MOSI_Dataset(Dataset):
         self.roberta_tokenizer = AutoTokenizer.from_pretrained(config.Text.BERT)
 
         self.visions = self.unaligned_data["vision"]
-        self.vision_masks =  self.unaligned_data["vision_padding_mask"]
-
-        # # #加载人脸和图片特征提取器
-        # self.mp4_file_paths = []
-        # for i in range(0, len(self.video_ids)):
-        #     imgs_path = os.path.join("data", "MOSI", "Raw", str(self.video_ids[i]), str(self.clip_ids[i])+".mp4")
-        #     self.mp4_file_paths.append(imgs_path)
-        
+        self.vision_masks =  self.unaligned_data["vision_padding_mask"]        
 
         #加载音频和音频特征提取器
         self.audio_file_paths = []
@@ -179,15 +172,25 @@ class MOSI_Dataset(Dataset):
     
 
 
-def get_dataloader(dataset_name):
+def get_dataloader(dataset_name, modal):
+    # 优化器和学习率调度器
+    if modal == "text":
+        batch_size = MOSI_config.Text.batch_size
+    elif modal == "audio":
+        batch_size = MOSI_config.Audio.batch_size
+    elif modal == "vision":
+        batch_size = MOSI_config.Vision.batch_size
+    else:
+        raise("参数传递错误，不属于三种模态中的任何一种")
+
     if dataset_name == "MOSI":
         train_data = MOSI_Dataset("train", MOSI_config)
         test_data = MOSI_Dataset("test", MOSI_config)
         valid_data = MOSI_Dataset("valid", MOSI_config)
 
-        train_loader = DataLoader(train_data, batch_size=MOSI_config.train_param.batch_size, shuffle=True)
-        test_loader = DataLoader(test_data, batch_size=MOSI_config.train_param.batch_size, shuffle=False)
-        valid_loader = DataLoader(valid_data, batch_size=MOSI_config.train_param.batch_size, shuffle=False)
+        train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+        test_loader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
+        valid_loader = DataLoader(valid_data, batch_size=batch_size, shuffle=False)
 
         return train_loader, test_loader, valid_loader
         
